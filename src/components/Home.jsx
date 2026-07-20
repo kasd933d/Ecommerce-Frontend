@@ -4,6 +4,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"; // ScrollTrigger import kiya
 import Navbar from "./Navbar";
 import { Product1 } from "./ProductContext";
 import AboutMe from "./Aboutme";
+import WhyUs from "./WhyUs";
+import FAQ from "./Faq";
+
 
 // GSAP ko batana padta hai ke hum ScrollTrigger use kar rahe hain
 gsap.registerPlugin(ScrollTrigger);
@@ -223,6 +226,10 @@ function Home() {
         </div>
       </section>
       <AboutMe/>
+      <WhyUs/>
+      <FAQ/>
+      
+  
     </div>
   
 
