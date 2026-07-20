@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import gsap from "gsap";
 
 function Navbar() {
   const navRef = useRef(null);
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("home");
 
   useEffect(() => {
@@ -15,22 +17,37 @@ function Navbar() {
     }
   }, []);
 
+  // Sync active tab with current URL path
+  useEffect(() => {
+    if (location.pathname === "/home") {
+      setActiveTab("home");
+    }
+  }, [location]);
+
   return (
     <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
       <nav
         ref={navRef}
         className="bg-white/80 backdrop-blur-xl border border-gray-200/80 px-4 py-2 sm:px-6 sm:py-2.5 rounded-full shadow-[0_15px_35px_rgba(0,0,0,0.08)] flex items-center gap-3 sm:gap-6 transition-all duration-300"
       >
-        {/* Brand Logo */}
-        <div className="pr-3 sm:pr-4 border-r border-gray-200 flex items-center">
-          <span className="text-xl font-bold text-slate-900 cursor-pointer"></span>
-        </div>
+        {/* Brand Logo - Navigates to /home */}
+        <Link 
+          to="/home" 
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="flex items-center gap-2 pr-3 sm:pr-4 border-r border-gray-200 cursor-pointer"
+        >
+          <span className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
+            STORE<span className="text-slate-400">.LAB</span>
+          </span>
+          <span className="text-lg font-bold text-slate-900"></span>
+        </Link>
 
         {/* Minimal Icon Navigation */}
         <div className="flex items-center gap-1 sm:gap-2">
           {/* Home Icon */}
-          <button
-            onClick={() => setActiveTab("home")}
+          <Link
+            to="/home"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             className={`p-2.5 sm:p-3 rounded-full transition-all duration-300 ${
               activeTab === "home"
                 ? "bg-slate-900 text-white shadow-md scale-105"
@@ -40,7 +57,7 @@ function Navbar() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 00-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 00-1 1m-6 0h6" />
             </svg>
-          </button>
+          </Link>
 
           {/* Search Icon */}
           <button
