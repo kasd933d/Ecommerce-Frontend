@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import {  Link } from 'react-router-dom'
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Box, ArrowUpRight } from "lucide-react";
@@ -137,9 +138,21 @@ function ProductSection2() {
                 </div>
               </div>
             ))}
+            
           </div>
+          
         )}
-
+<div className="flex justify-center pt-6">
+  <Link
+   to="/products/moreproducts"
+    className="px-8 py-4 bg-black text-white text-xs font-black uppercase tracking-widest rounded-full hover:bg-gray-900 border border-black hover:border-black/50 hover:shadow-xl transition-all duration-300 active:scale-95 flex items-center gap-2 group text-center"
+  >
+    <span>Buy Products</span>
+    <span className="group-hover:translate-x-1 transition-transform duration-200">
+      →
+    </span>
+  </Link>
+      </div>
       </div>
     </section>
   );

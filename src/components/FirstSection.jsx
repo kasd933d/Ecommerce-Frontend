@@ -1,24 +1,46 @@
-import React from 'react'
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Product1 } from "./ProductContext";
+import { useProductContext } from "./ProductContext"; // ✅ Fixed Import
+
 gsap.registerPlugin(ScrollTrigger);
+
 const FirstSection = () => {
- const titleRef = useRef(null);
+  const titleRef = useRef(null);
   const descRef = useRef(null);
   const btnRef = useRef(null);
   const imageRef = useRef(null);
-  const productSectionRef = useRef(null); // Naya ref scroll section ke liye
+  const productSectionRef = useRef(null);
 
-  const productData = Product1();
-  const Products = productData?.Products || [];
+  // Context Hooks
+  const { addToCart, setSelectedProduct } = useProductContext();
 
+  // Local state for featured products if fetching directly
+  const [products, setProducts] = useState([]);
+
+  // Fetch Featured Products (Top 4 Items)
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const res = await fetch("https://dummyjson.com/products?limit=4");
+        const data = await res.json();
+        if (res.ok) {
+          setProducts(data.products);
+        }
+      } catch (err) {
+        console.error("Failed to load featured products", err);
+      }
+    };
+
+    fetchFeatured();
+  }, []);
+
+  // GSAP Animations
   useEffect(() => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline();
 
-      // 1. HERO SECTION ANIMATION (Page load hotey hi chalegi)
+      // 1. HERO SECTION ANIMATION
       tl.fromTo(
         titleRef.current,
         { y: 30, opacity: 0 },
@@ -43,9 +65,8 @@ const FirstSection = () => {
           "-=0.5"
         );
 
-      // 2. SCROLL ANIMATION (Jab scroll karke niche aayenge tab chalegi)
+      // 2. SCROLL ANIMATION
       if (productSectionRef.current) {
-        // Section Header Animation
         gsap.fromTo(
           ".section-header",
           { y: 40, opacity: 0 },
@@ -56,13 +77,12 @@ const FirstSection = () => {
             ease: "power3.out",
             scrollTrigger: {
               trigger: productSectionRef.current,
-              start: "top 80%", // Jab section viewport ke 80% hisse par aaye
-              toggleActions: "play none none reverse", // Wapas upar jane par reverse
+              start: "top 80%",
+              toggleActions: "play none none reverse",
             },
           }
         );
 
-        // Cards Stagger Animation (Ek ke baad ek aayenge)
         gsap.fromTo(
           ".product-card",
           { y: 50, opacity: 0, scale: 0.95 },
@@ -71,7 +91,7 @@ const FirstSection = () => {
             opacity: 1,
             scale: 1,
             duration: 0.6,
-            stagger: 0.15, // Har card 0.15s ke delay se aayega
+            stagger: 0.15,
             ease: "power3.out",
             scrollTrigger: {
               trigger: productSectionRef.current,
@@ -83,13 +103,11 @@ const FirstSection = () => {
       }
     });
 
-    return () => ctx.revert(); 
-  }, []);
-  return (
-    <div>
-       <div className="w-full min-h-screen bg-[#F8FAFC] text-slate-900 selection:bg-slate-900 selection:text-white">
-    
+    return () => ctx.revert();
+  }, [products]); // Trigger animation refresh when products load
 
+  return (
+    <div className="w-full min-h-screen bg-[#F8FAFC] text-slate-900 selection:bg-slate-900 selection:text-white">
       {/* Hero Section */}
       <section className="pt-32 pb-20 lg:pt-40 lg:pb-28 max-w-7xl mx-auto px-6 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -142,7 +160,7 @@ const FirstSection = () => {
         </div>
       </section>
 
-      {/* Featured Products Section (Scroll Animation Yahan Chalegi) */}
+      {/* Featured Products Section */}
       <section 
         ref={productSectionRef} 
         className="py-20 bg-[#F1F5F9] text-[#0F172B] rounded-t-[3rem] px-6 lg:px-12"
@@ -161,15 +179,16 @@ const FirstSection = () => {
 
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {Products && Products.length > 0 ? (
-              Products.map((product) => (
+            {products && products.length > 0 ? (
+              products.map((product) => (
                 <div
-                  key={product.id || Math.random()}
+                  key={product.id}
                   className="product-card bg-white text-slate-900 rounded-[24px] p-5 flex flex-col sm:flex-row items-center gap-5 shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-100"
                 >
                   <div className="w-full sm:w-[45%] h-44 bg-slate-100 rounded-[18px] flex items-center justify-center p-4 relative shrink-0 overflow-hidden">
                     <img
                       src={
+                        product?.thumbnail ||
                         product?.images?.[0] ||
                         "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80"
                       }
@@ -195,7 +214,7 @@ const FirstSection = () => {
                         {product.title}
                       </h3>
                       <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                        Premium build quality & ergonomic minimal aesthetics.
+                        {product.description || "Premium build quality & ergonomic minimal aesthetics."}
                       </p>
                     </div>
 
@@ -203,7 +222,10 @@ const FirstSection = () => {
                       <p className="text-2xl font-black text-slate-900">
                         ${product.price}
                       </p>
-                      <button className="bg-slate-900 hover:bg-black text-white text-xs font-bold uppercase tracking-wider py-2.5 px-4 rounded-xl shadow-md transition-all duration-300 hover:scale-105">
+                      <button 
+                        onClick={() => addToCart(product)}
+                        className="bg-slate-900 hover:bg-black text-white text-xs font-bold uppercase tracking-wider py-2.5 px-4 rounded-xl shadow-md transition-all duration-300 hover:scale-105"
+                      >
                         Add
                       </button>
                     </div>
@@ -218,15 +240,8 @@ const FirstSection = () => {
           </div>
         </div>
       </section>
-     
-      
-  
     </div>
-  
+  );
+};
 
-
-    </div>
-  )
-}
-
-export default FirstSection
+export default FirstSection;

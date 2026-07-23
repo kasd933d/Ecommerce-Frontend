@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import gsap from "gsap";
+import { useProductContext } from "./ProductContext";
 
 function Navbar() {
   const navRef = useRef(null);
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("home");
+
+  // Context se cart state le rahe hain
+  const { cart } = useProductContext();
+
+  // Total items in cart calculate ho rahe hain
+  const totalCartCount = cart ? cart.reduce((acc, item) => acc + (item.quantity || 1), 0) : 0;
 
   useEffect(() => {
     if (navRef.current) {
@@ -19,8 +26,12 @@ function Navbar() {
 
   // Sync active tab with current URL path
   useEffect(() => {
-    if (location.pathname === "/home") {
+    if (location.pathname === "/home" || location.pathname === "/") {
       setActiveTab("home");
+    } else if (location.pathname.includes("/products")) {
+      setActiveTab("products");
+    } else if (location.pathname === "/cart") {
+      setActiveTab("cart");
     }
   }, [location]);
 
@@ -30,7 +41,7 @@ function Navbar() {
         ref={navRef}
         className="bg-white/80 backdrop-blur-xl border border-gray-200/80 px-4 py-2 sm:px-6 sm:py-2.5 rounded-full shadow-[0_15px_35px_rgba(0,0,0,0.08)] flex items-center gap-3 sm:gap-6 transition-all duration-300"
       >
-        {/* Brand Logo - Navigates to /home */}
+        {/* Brand Logo */}
         <Link 
           to="/home" 
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -59,30 +70,29 @@ function Navbar() {
             </svg>
           </Link>
 
-          {/* Search Icon */}
-{/* Products Link */}
-<Link
-  to="/products"
-  onClick={() => {
-    setActiveTab("products");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }}
-  className={`p-2.5 sm:p-3 rounded-full transition-all duration-300 ${
-    activeTab === "products"
-      ? "bg-slate-900 text-white shadow-md scale-105"
-      : "text-gray-500 hover:text-slate-900 hover:bg-gray-100"
-  }`}
-  title="Products"
->
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      strokeWidth="2" 
-      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" 
-    />
-  </svg>
-</Link>
+          {/* Products Link */}
+          <Link
+            to="/products"
+            onClick={() => {
+              setActiveTab("products");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className={`p-2.5 sm:p-3 rounded-full transition-all duration-300 ${
+              activeTab === "products"
+                ? "bg-slate-900 text-white shadow-md scale-105"
+                : "text-gray-500 hover:text-slate-900 hover:bg-gray-100"
+            }`}
+            title="Products"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth="2" 
+                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" 
+              />
+            </svg>
+          </Link>
 
           {/* Saved/Wishlist Icon */}
           <button
@@ -98,8 +108,9 @@ function Navbar() {
             </svg>
           </button>
 
-          {/* Cart Icon with Badge */}
-          <button
+          {/* Cart Icon with Dynamic Badge */}
+          <Link
+            to="/cart"
             onClick={() => setActiveTab("cart")}
             className={`relative p-2.5 sm:p-3 rounded-full transition-all duration-300 ${
               activeTab === "cart"
@@ -110,8 +121,14 @@ function Navbar() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
-           
-          </button>
+
+            {/* Live Cart Count Badge */}
+            {totalCartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white animate-bounce">
+                {totalCartCount}
+              </span>
+            )}
+          </Link>
 
           {/* Profile Icon */}
           <button
