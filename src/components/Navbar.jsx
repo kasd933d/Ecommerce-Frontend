@@ -48,7 +48,7 @@ function Navbar() {
           className="flex items-center gap-2 pr-3 sm:pr-4 border-r border-gray-200 cursor-pointer"
         >
           <span className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
-            STORE<span className="text-slate-400">.LAB</span>
+            AURA<span className="text-slate-400">.LAB</span>
           </span>
           <span className="text-lg font-bold text-slate-900"></span>
         </Link>

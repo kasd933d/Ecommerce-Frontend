@@ -90,6 +90,7 @@ export default function MoreProducts() {
           dispatch({ type: "FETCH_ERROR", payload: "Failed to load products." });
         }
       } catch (err) {
+        console.log(err)
         dispatch({ type: "FETCH_ERROR", payload: "Network Connection Error!" });
       }
     };
