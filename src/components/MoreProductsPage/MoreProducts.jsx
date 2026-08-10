@@ -85,10 +85,12 @@ export default function MoreProducts() {
         const data = await res.json();
 
         if (res.ok) {
-          dispatch({ type: "FETCH_SUCCESS", payload: data.products });
+console.log(data)
+          dispatch({ type: "FETCH_SUCCESS", payload: data.products  });
         } else {
           dispatch({ type: "FETCH_ERROR", payload: "Failed to load products." });
         }
+
       } catch (err) {
         console.log(err)
         dispatch({ type: "FETCH_ERROR", payload: "Network Connection Error!" });

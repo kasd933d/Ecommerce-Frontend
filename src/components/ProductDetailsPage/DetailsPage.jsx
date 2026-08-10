@@ -1,21 +1,32 @@
 import React, { useContext, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ProductContext } from "../ProductContext";
+import { useAuth } from "../AuthContext/AuthContext";
+
 
 export default function ProductDetail() {
+  const navigate = useNavigate();
+  
+  // 👈 2. User status real AuthContext se nikala
+  const { user } = useAuth(); 
+  
+  // 👈 3. Product Context se sirf selectedProduct aur addToCart liya
   const { selectedProduct, addToCart } = useContext(ProductContext);
 
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [likedReviews, setLikedReviews] = useState({});
+  const [addedNotice, setAddedNotice] = useState(false); // Success feedback alert
 
   if (!selectedProduct) {
     return (
-      <div className="min-h-[60vh] flex flex-col justify-center items-center gap-3 bg-gray-100">
-        <p className="text-sm font-semibold text-gray-600">No product selected.</p>
+      <div className="min-h-[70vh] flex flex-col justify-center items-center gap-6 bg-white text-black px-4 font-sans">
+        <p className="text-xs font-black tracking-[0.2em] text-neutral-400 uppercase">
+          No Product Selected
+        </p>
         <Link
           to="/products"
-          className="bg-orange-500 text-white px-5 py-2 rounded text-xs font-bold uppercase tracking-wider hover:bg-orange-600 transition"
+          className="bg-black text-white px-8 py-3.5 text-xs font-black uppercase tracking-[0.2em] hover:bg-neutral-800 transition-all border border-black"
         >
           Back to Catalog
         </Link>
@@ -23,8 +34,22 @@ export default function ProductDetail() {
     );
   }
 
-  const handleAddToCart = () => {
+  // Authentication Check on Add To Cart
+  const handleAddToCart = (e) => {
+    e.preventDefault(); // Page/Form refresh browser default action stop karne ke liye
+
+    if (!user) {
+      // Agar user login NAHI hai -> Auth/Login page par bhejo
+      navigate("/Auth");
+      return;
+    }
+
+    // User Logged In hai -> Cart me item add karein
     addToCart({ ...selectedProduct, qty: quantity });
+
+    // Success alert show karo ki item add ho gaya hai
+    setAddedNotice(true);
+    setTimeout(() => setAddedNotice(false), 3000);
   };
 
   const toggleReviewLike = (reviewId) => {
@@ -43,291 +68,298 @@ export default function ProductDetail() {
   const mockReviews = [
     {
       id: 1,
-      user: "Ahmed K.",
+      user: "AHMED K.",
       rating: 5,
-      date: "12 Jul 2026",
-      comment: "Bohot hi Zabardast quality hai! Product bilkul picture jaisa hai. Packing bhi bohot achhi thi aur fast delivery mili.",
+      date: "12 JUL 2026",
+      comment:
+        "Bohot hi Zabardast quality hai! Product bilkul picture jaisa hai. Packing bhi bohot achhi thi aur fast delivery mili.",
       images: [selectedProduct.thumbnail, selectedProduct.thumbnail],
       likes: 14,
     },
     {
       id: 2,
-      user: "Usman R.",
+      user: "USMAN R.",
       rating: 5,
-      date: "28 Jun 2026",
-      comment: "Value for money! Quality was beyond my expectation. Highly recommended to everyone.",
+      date: "28 JUN 2026",
+      comment:
+        "Value for money! Quality was beyond my expectation. Highly recommended to everyone.",
       images: [selectedProduct.thumbnail],
       likes: 8,
     },
     {
       id: 3,
-      user: "Sara M.",
+      user: "SARA M.",
       rating: 4,
-      date: "05 Jun 2026",
-      comment: "Good product overall. Quality is nice, took 3 days to deliver in Karachi.",
+      date: "05 JUN 2026",
+      comment:
+        "Good product overall. Quality is nice, took 3 days to deliver in Karachi.",
       images: [],
       likes: 3,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#eff0f5] text-gray-800 text-xs py-4 px-2 sm:px-4 lg:px-8 font-sans">
-      <div className="max-w-6xl mx-auto space-y-3">
+    <div className="min-h-screen bg-white text-black font-sans py-12 px-4 sm:px-8 lg:px-16 selection:bg-black selection:text-white relative">
+      
+      {/* SUCCESS TOAST NOTIFICATION (Jab Cart me item add hoga) */}
+      {addedNotice && (
+        <div className="fixed bottom-6 right-6 z-50 bg-black text-white px-6 py-4 rounded-xl shadow-2xl border border-neutral-800 flex items-center gap-4 transition-all">
+          <span className="text-green-400 font-bold">✓</span>
+          <p className="text-xs font-bold uppercase tracking-wider">
+            Added {quantity} x "{selectedProduct.title}" to Cart!
+          </p>
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto space-y-20">
         
-        {/* Breadcrumb Navigation */}
-        <div className="text-[11px] text-gray-500 flex items-center gap-1.5 px-1">
-          <Link to="/products" className="hover:text-orange-600">
+        {/* ================= BREADCRUMB ================= */}
+        <nav className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 flex items-center gap-2">
+          <Link to="/products" className="hover:text-black transition-colors">
             Products
           </Link>
           <span>/</span>
-          <span className="text-gray-400 capitalize">{selectedProduct.category || "General"}</span>
+          <span>{selectedProduct.category || "General"}</span>
           <span>/</span>
-          <span className="text-gray-800 font-medium truncate max-w-[200px]">
+          <span className="text-black font-black truncate max-w-[200px]">
             {selectedProduct.title}
           </span>
-        </div>
+        </nav>
 
-        {/* ================= MAIN PRODUCT BLOCK ================= */}
-        <div className="bg-white rounded border border-gray-200 shadow-sm p-4 grid grid-cols-1 md:grid-cols-12 gap-6">
+        {/* ================= MAIN PRODUCT GRID ================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
           
-          {/* LEFT: GALLERY (5 Cols) */}
-          <div className="md:col-span-5 space-y-3">
-            <div className="w-full aspect-square border border-gray-200 rounded p-2 flex items-center justify-center bg-white">
+          {/* LEFT: GALLERY (7 COLS) */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="w-full aspect-square border border-black p-8 flex items-center justify-center bg-white relative">
               <img
                 src={productImages[selectedImage] || selectedProduct.thumbnail}
                 alt={selectedProduct.title}
-                className="max-h-72 w-full object-contain"
+                className="max-h-[85%] w-full object-contain"
               />
             </div>
 
             {/* Thumbnails */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="flex items-center gap-3 overflow-x-auto pb-1">
               {productImages.map((img, index) => (
                 <button
                   key={index}
+                  type="button"
                   onClick={() => setSelectedImage(index)}
-                  className={`w-12 h-12 rounded border p-0.5 bg-white shrink-0 ${
+                  className={`w-16 h-16 border p-1 bg-white shrink-0 transition-all ${
                     selectedImage === index
-                      ? "border-orange-500 shadow-sm"
-                      : "border-gray-200 hover:border-gray-400 opacity-70 hover:opacity-100"
+                      ? "border-black ring-1 ring-black"
+                      : "border-neutral-200 hover:border-black opacity-60 hover:opacity-100"
                   }`}
                 >
-                  <img src={img} alt="thumb" className="w-full h-full object-contain" />
+                  <img src={img} alt="thumbnail" className="w-full h-full object-contain" />
                 </button>
               ))}
             </div>
           </div>
 
-          {/* MIDDLE: INFO & BUY BOX (4 Cols) */}
-          <div className="md:col-span-4 space-y-4 border-b md:border-b-0 md:border-r border-gray-100 pr-0 md:pr-4">
-            <div>
-              <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide bg-gray-100 px-2 py-0.5 rounded">
+          {/* RIGHT: DETAILS & BUY BOX (5 COLS) */}
+          <div className="lg:col-span-5 space-y-8">
+            <div className="space-y-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 block">
                 {selectedProduct.category || "General"}
               </span>
-              <h1 className="text-base font-normal text-gray-900 mt-1.5 leading-snug">
+              <h1 className="text-2xl sm:text-3xl font-black text-black uppercase tracking-wide leading-tight">
                 {selectedProduct.title}
               </h1>
+
+              {/* Rating */}
+              <div className="flex items-center gap-3 text-xs pt-2">
+                <div className="flex text-black text-xs font-bold tracking-widest">
+                  {"★".repeat(5)}
+                </div>
+                <span className="font-black text-black">4.8</span>
+                <span className="text-neutral-400 text-[11px] font-medium tracking-wider">
+                  (128 REVIEWS)
+                </span>
+              </div>
             </div>
 
-            {/* Rating Overview */}
-            <div className="flex items-center gap-2 text-[11px] border-b border-gray-100 pb-3">
-              <div className="flex text-amber-400">★★★★★</div>
-              <span className="font-semibold text-gray-800">4.8</span>
-              <span className="text-gray-400">| 128 Ratings</span>
-            </div>
-
-            {/* Price Box */}
-            <div className="bg-gray-50 p-3 rounded space-y-1">
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-orange-600">
+            {/* Price Block */}
+            <div className="border-y border-neutral-200 py-6 space-y-2">
+              <div className="flex items-baseline gap-4">
+                <span className="text-3xl font-black text-black tracking-tight">
                   Rs. {selectedProduct.price?.toLocaleString()}
                 </span>
                 {selectedProduct.discountPercentage && (
-                  <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
-                    -{Math.round(selectedProduct.discountPercentage)}%
+                  <span className="text-[10px] font-bold uppercase tracking-widest border border-black px-2 py-1">
+                    -{Math.round(selectedProduct.discountPercentage)}% OFF
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Short Description */}
-            <p className="text-gray-600 leading-relaxed text-[11px] line-clamp-3">
+            {/* Description */}
+            <p className="text-neutral-600 text-xs sm:text-sm leading-relaxed font-normal">
               {selectedProduct.description}
             </p>
 
             {/* Quantity Selector */}
-            <div className="flex items-center gap-4 pt-2">
-              <span className="text-gray-500 font-medium">Quantity:</span>
-              <div className="flex items-center border border-gray-300 rounded overflow-hidden">
+            <div className="space-y-3 pt-2">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-black block">
+                Quantity
+              </label>
+              <div className="inline-flex items-center border border-black">
                 <button
                   type="button"
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="w-7 h-7 flex items-center justify-center font-bold text-gray-600 bg-gray-50 hover:bg-gray-200"
+                  className="w-10 h-10 flex items-center justify-center font-bold text-black hover:bg-black hover:text-white transition-colors"
                 >
                   −
                 </button>
-                <span className="w-10 text-center font-semibold text-gray-800">
+                <span className="w-12 text-center font-black text-sm text-black">
                   {quantity}
                 </span>
                 <button
                   type="button"
                   onClick={() => setQuantity((q) => q + 1)}
-                  className="w-7 h-7 flex items-center justify-center font-bold text-gray-600 bg-gray-50 hover:bg-gray-200"
+                  className="w-10 h-10 flex items-center justify-center font-bold text-black hover:bg-black hover:text-white transition-colors"
                 >
                   +
                 </button>
               </div>
             </div>
 
-            {/* Add To Cart Action */}
-            <div className="pt-2">
+            {/* Add to Cart CTA */}
+            <div className="pt-4">
               <button
+                type="button"
                 onClick={handleAddToCart}
-                className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded uppercase tracking-wider text-xs transition shadow-sm active:scale-98"
+                className="w-full py-4 bg-black text-white hover:bg-neutral-800 text-xs font-black uppercase tracking-[0.2em] transition-all active:scale-[0.99]"
               >
                 Add To Cart
               </button>
             </div>
-          </div>
 
-          {/* RIGHT: DELIVERY & SELLER DETAILS (3 Cols) */}
-          <div className="md:col-span-3 space-y-4 text-[11px]">
-            {/* Delivery */}
-            <div className="space-y-2 border-b border-gray-100 pb-3">
-              <div className="text-gray-400 uppercase font-bold text-[10px] tracking-wider">
-                Delivery Options
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-gray-400">📍</span>
-                <div>
-                  <div className="font-semibold text-gray-800">Standard Delivery</div>
-                  <div className="text-gray-500">2 - 4 business days</div>
-                  <div className="font-bold text-gray-900 mt-0.5">Rs. 145</div>
-                </div>
-              </div>
-              <div className="flex items-start gap-2 pt-1">
-                <span className="text-gray-400">💵</span>
-                <div>
-                  <div className="font-semibold text-gray-800">Cash on Delivery</div>
-                  <div className="text-gray-500">Available</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Seller Info */}
-            <div className="space-y-2">
-              <div className="text-gray-400 uppercase font-bold text-[10px] tracking-wider">
-                Service & Seller
-              </div>
-              <div>
-                <div className="font-bold text-gray-900">Official Retail Store</div>
-                <div className="text-emerald-600 text-[10px] font-semibold">✓ Verified Seller</div>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-center pt-1">
-                <div className="bg-gray-50 p-1.5 rounded border border-gray-100">
-                  <span className="font-bold text-gray-800 block text-xs">96%</span>
-                  <span className="text-[9px] text-gray-400 uppercase">Positive</span>
-                </div>
-                <div className="bg-gray-50 p-1.5 rounded border border-gray-100">
-                  <span className="font-bold text-gray-800 block text-xs">99%</span>
-                  <span className="text-[9px] text-gray-400 uppercase">Ship Rate</span>
-                </div>
-              </div>
+            {/* Shipping Specs */}
+            <div className="grid grid-cols-2 gap-4 pt-6 border-t border-neutral-200 text-[11px] font-bold uppercase tracking-wider text-black">
+              <div>• Standard Shipping (2-4 Days)</div>
+              <div>• Cash on Delivery Available</div>
             </div>
 
           </div>
 
         </div>
 
-        {/* ================= PRODUCT DESCRIPTION SECTION ================= */}
-        <div className="bg-white rounded border border-gray-200 p-4 space-y-2">
-          <h2 className="text-xs font-bold text-gray-900 uppercase border-b border-gray-100 pb-2">
-            Product details of {selectedProduct.title}
+        {/* ================= SPECIFICATIONS SECTION ================= */}
+        <div className="border-t border-black pt-12 space-y-6">
+          <h2 className="text-xs font-black uppercase tracking-[0.2em] text-black">
+            Product Specifications
           </h2>
-          <div className="text-gray-600 text-[11px] leading-relaxed pt-1">
+          <div className="border border-black p-6 sm:p-8 space-y-4 max-w-4xl text-xs sm:text-sm text-neutral-700 leading-relaxed">
             <p>{selectedProduct.description}</p>
-            <ul className="list-disc list-inside mt-2 space-y-1 text-gray-500">
-              <li>100% Original product delivered directly from authorized suppliers.</li>
-              <li>Tested for quality assurance before dispatch.</li>
-              <li>Includes standard warranty as per manufacturer terms.</li>
+            <ul className="space-y-2 pt-4 border-t border-neutral-200 text-xs font-medium text-black">
+              <li className="flex items-center gap-2">
+                <span>—</span> 100% Original product sourced directly from verified suppliers.
+              </li>
+              <li className="flex items-center gap-2">
+                <span>—</span> Inspected for high performance and quality before dispatch.
+              </li>
+              <li className="flex items-center gap-2">
+                <span>—</span> Includes standard brand warranty & quick support service.
+              </li>
             </ul>
           </div>
         </div>
 
         {/* ================= RATINGS & REVIEWS SECTION ================= */}
-        <div className="bg-white rounded border border-gray-200 p-4 space-y-4">
-          <h2 className="text-xs font-bold text-gray-900 uppercase border-b border-gray-100 pb-2">
-            Ratings & Reviews
-          </h2>
+        <div className="border-t border-black pt-12 space-y-12">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+            <div className="space-y-1">
+              <h2 className="text-xs font-black uppercase tracking-[0.2em] text-black">
+                Customer Reviews
+              </h2>
+              <p className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider">
+                Real feedback from verified purchasers
+              </p>
+            </div>
+            
+            <div className="flex items-baseline gap-2">
+              <span className="text-4xl font-black text-black">4.8</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">/ 5.0 Rating</span>
+            </div>
+          </div>
 
           {/* Rating Summary Bar */}
-          <div className="flex flex-col sm:flex-row items-center gap-6 bg-gray-50 p-4 rounded border border-gray-100">
-            <div className="text-center sm:border-r border-gray-200 pr-0 sm:pr-6 space-y-1">
-              <span className="text-3xl font-bold text-gray-900 block">4.8</span>
-              <div className="text-amber-400 text-sm">★★★★★</div>
-              <span className="text-[10px] text-gray-400 block">128 Ratings</span>
+          <div className="border border-black p-6 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            <div className="md:col-span-4 text-center md:text-left space-y-1">
+              <div className="text-black text-sm font-bold tracking-widest">★★★★★</div>
+              <p className="text-xs font-bold text-black uppercase tracking-wider">
+                95% Customer Recommendation
+              </p>
             </div>
 
-            <div className="flex-1 space-y-1.5 w-full text-[11px] font-medium text-gray-500">
+            <div className="md:col-span-8 space-y-2 text-xs font-bold text-black">
               {[
-                { star: "5 Star", pct: "85%", count: 108 },
-                { star: "4 Star", pct: "10%", count: 12 },
-                { star: "3 Star", pct: "3%", count: 5 },
-                { star: "2 Star", pct: "1%", count: 2 },
-                { star: "1 Star", pct: "1%", count: 1 },
+                { star: "5 STAR", pct: "85%", count: 108 },
+                { star: "4 STAR", pct: "10%", count: 12 },
+                { star: "3 STAR", pct: "3%", count: 5 },
+                { star: "2 STAR", pct: "1%", count: 2 },
+                { star: "1 STAR", pct: "1%", count: 1 },
               ].map((row, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <span className="w-10">{row.star}</span>
-                  <div className="flex-1 h-1.5 bg-gray-200 rounded overflow-hidden">
-                    <div className="h-full bg-amber-400 rounded" style={{ width: row.pct }}></div>
+                <div key={i} className="flex items-center gap-4">
+                  <span className="w-16 text-[10px] tracking-wider">{row.star}</span>
+                  <div className="flex-1 h-1.5 bg-neutral-100 overflow-hidden border border-black">
+                    <div className="h-full bg-black" style={{ width: row.pct }}></div>
                   </div>
-                  <span className="w-6 text-right text-gray-400">{row.count}</span>
+                  <span className="w-8 text-right text-[11px] font-mono">{row.count}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Customer Reviews List */}
-          <div className="space-y-4 pt-2">
+          <div className="divide-y divide-neutral-200">
             {mockReviews.map((review) => {
               const isLiked = likedReviews[review.id];
               return (
-                <div key={review.id} className="border-b border-gray-100 pb-4 space-y-1.5 last:border-0">
+                <div key={review.id} className="py-8 space-y-4 first:pt-0 last:pb-0">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-gray-800 text-xs">{review.user}</span>
-                      <span className="text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-medium border border-emerald-100">
+                    <div className="flex items-center gap-3">
+                      <span className="font-black text-black text-xs tracking-wider">{review.user}</span>
+                      <span className="text-[9px] font-bold uppercase tracking-widest border border-black px-2 py-0.5">
                         Verified Purchase
                       </span>
                     </div>
-                    <span className="text-[10px] text-gray-400">{review.date}</span>
+                    <span className="text-[10px] font-bold tracking-wider text-neutral-400">{review.date}</span>
                   </div>
 
-                  <div className="text-amber-400 text-[10px]">{"★".repeat(review.rating)}</div>
+                  <div className="text-black text-xs font-bold tracking-widest">{"★".repeat(review.rating)}</div>
 
-                  <p className="text-gray-700 leading-relaxed text-[11px]">{review.comment}</p>
+                  <p className="text-neutral-700 leading-relaxed text-xs sm:text-sm font-normal max-w-3xl">
+                    {review.comment}
+                  </p>
 
                   {/* Review Images */}
                   {review.images.length > 0 && (
-                    <div className="flex items-center gap-1.5 pt-1">
+                    <div className="flex items-center gap-3 pt-2">
                       {review.images.map((img, idx) => (
-                        <div key={idx} className="w-12 h-12 bg-gray-50 border border-gray-200 rounded p-0.5 overflow-hidden">
+                        <div key={idx} className="w-16 h-16 border border-black p-1">
                           <img src={img} alt="review-pic" className="w-full h-full object-contain" />
                         </div>
                       ))}
                     </div>
                   )}
 
-                  <button
-                    onClick={() => toggleReviewLike(review.id)}
-                    className={`text-[10px] font-semibold px-2 py-1 rounded border transition flex items-center gap-1 w-max ${
-                      isLiked
-                        ? "bg-gray-800 text-white border-gray-800"
-                        : "bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    👍 Helpful ({review.likes + (isLiked ? 1 : 0)})
-                  </button>
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleReviewLike(review.id)}
+                      className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 border transition-all flex items-center gap-2 ${
+                        isLiked
+                          ? "bg-black text-white border-black"
+                          : "bg-white text-black border-black hover:bg-neutral-100"
+                      }`}
+                    >
+                      <span>Helpful</span>
+                      <span>({review.likes + (isLiked ? 1 : 0)})</span>
+                    </button>
+                  </div>
                 </div>
               );
             })}
