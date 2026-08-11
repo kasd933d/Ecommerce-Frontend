@@ -110,6 +110,15 @@ export default function AdminDashboard() {
                 <p className="text-xs text-slate-400">Manage store listings and stock levels</p>
               </div>
 
+  <button
+    onClick={() => navigate("/admin/products")}
+    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-full border border-slate-700 transition-all duration-300 active:scale-95"
+  >
+    View All Products
+  </button>
+
+
+
               {/* 👈 3. Updated Button Click Event */}
               <button
                 onClick={() => navigate("/admin/add-product")}

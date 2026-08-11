@@ -22,6 +22,8 @@ import Profile from './components/ProfilePage/Profile'
 import AdminRoute from './components/AdminRoute/AdminRoute'
 import AdminDashboard from './components/AdminDashboard/AdminDashboard'
 import AddProduct from './components/AddProduct/AddProduct'
+import ManageProducts from './components/ViewAllProducts/ManageProducts'
+
 
 const App = () => {
   return (
@@ -72,6 +74,7 @@ const App = () => {
             <Route element={<AdminRoute/>}>
         <Route path="/admin" element={<AdminDashboard/>} />
         <Route path="/admin/add-product" element={<AddProduct/>} />
+        <Route path="/admin/products" element={<ManageProducts />} />
       </Route>
           </Routes>
         </div>

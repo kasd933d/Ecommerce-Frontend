@@ -141,7 +141,7 @@ export default function AddProduct() {
       // STEP 2: Upload ALL Images to Cloudinary
       // -------------------------------------------------------------
       setUploadProgress(`Uploading ${imageFiles.length} image(s) to Cloudinary...`);
-      
+
       const uploadedImagesArray = [];
 
       for (let i = 0; i < imageFiles.length; i++) {
@@ -183,6 +183,14 @@ export default function AddProduct() {
         ...(v.color?.trim() && { color: v.color.trim() }),
       }));
 
+
+
+      const Refresh = await fetch("/api/v1/auth/refresh", {
+        method: "POST",
+
+        credentials: "include",
+
+      });
       // -------------------------------------------------------------
       // STEP 4: Post Final Schema Payload to Backend
       // -------------------------------------------------------------
@@ -340,11 +348,10 @@ export default function AddProduct() {
                 {imagePreviews.map((src, idx) => (
                   <div
                     key={idx}
-                    className={`relative bg-slate-950 p-2 rounded-2xl border ${
-                      defaultImgIndex === idx
+                    className={`relative bg-slate-950 p-2 rounded-2xl border ${defaultImgIndex === idx
                         ? "border-[#FFE500]"
                         : "border-slate-800"
-                    }`}
+                      }`}
                   >
                     <img
                       src={src}
@@ -355,11 +362,10 @@ export default function AddProduct() {
                       <button
                         type="button"
                         onClick={() => setDefaultImgIndex(idx)}
-                        className={`text-[10px] px-2 py-0.5 rounded ${
-                          defaultImgIndex === idx
+                        className={`text-[10px] px-2 py-0.5 rounded ${defaultImgIndex === idx
                             ? "bg-[#FFE500] text-slate-950 font-bold"
                             : "bg-slate-800 text-slate-400"
-                        }`}
+                          }`}
                       >
                         {defaultImgIndex === idx ? "Default" : "Make Default"}
                       </button>
